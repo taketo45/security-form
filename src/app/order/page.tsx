@@ -41,13 +41,7 @@ import { useState } from "react";
 │  ・利用規約同意: 必須、true のみ許可                      
 */
 
-// 日付バリデーション
-const futureDate = z.coerce.date().refine((date) => date > new Date(), "未来の日付を選択してください");
 
-// boolean の必須（true のみ）
-const agreeTerms = z.literal(true, {
-  error: "利用規約に同意してください",
-});
 
 const orderSchema = z
   .object({
@@ -98,7 +92,11 @@ const orderSchema = z
     notes: z.string().max(500, "500文字以内で入力してください").optional(),
 
     // 利用規約同意
-    agreeTerms: agreeTerms,
+    agreeTerms: z
+      .boolean()
+      .refine((val) => val === true, {
+        message: "利用規約に同意してください",
+      }),
   })
   .superRefine((data, ctx) => {
     if (data.paymentMethod === "credit") {
@@ -117,7 +115,7 @@ const orderSchema = z
 type OrderFormData = z.infer<typeof orderSchema>;
 
 export default function RegisterForm() {
-  const [submittedData, setSubmittedData] = useState<RegisterFormData | null>(
+  const [submittedData, setSubmittedData] = useState<OrderFormData | null>(
     null
   );
 
@@ -128,6 +126,20 @@ export default function RegisterForm() {
     formState: { errors },
   } = useForm<OrderFormData>({
     resolver: zodResolver(orderSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      postalCode: "",
+      address: "",
+      category: "" as "food" | "drink" | "other",
+      quantity: 1,
+      deliveryDate: "",
+      paymentMethod: "" as "credit" | "bank" | "cod",
+      cardNumber: "",
+      notes: "",
+      agreeTerms: false,
+    },
   });
 
   // contactType を監視（条件付き表示に使う）
@@ -136,7 +148,7 @@ export default function RegisterForm() {
   const onSubmit = (data: OrderFormData) => {
     console.log("=== 登録データ ===");
     console.log(data);
-    setSubmittedData(data);
+    setSubmittedData(data as OrderFormData);
   };
 
 
