@@ -66,7 +66,10 @@ const orderSchema = z
     }),
 
     // 数量
-    quantity: z.number().int("数量は整数で入力してください").min(1, "数量は1以上で入力してください").max(99, "数量は99以下で入力してください"),
+    quantity: z.number()
+    .int("数量は整数で入力してください")
+    .min(1, "数量は1以上で入力してください")
+    .max(99, "数量は99以下で入力してください"),
 
     // 配送日指定
     deliveryDate: z
